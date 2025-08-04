@@ -90,14 +90,14 @@ def test_SliTraNet(opt):
         if os.path.exists(predfile)==False:
             # run stage 1
             if os.path.exists(opt.pred_dir)==False:
-                os.makedirs(opt.pred_dir)            
+               os.makedirs(opt.pred_dir)
             detect_initial_slide_transition_candidates_resnet2d(net2d, videofile, base, roi, load_size_roi, opt.pred_dir, opt)
             
         # load results of stage 1
         slide_ids, slide_frame_ids_1, slide_frame_ids_2 = read_pred_slide_ids_from_file(predfile)
         slide_transition_pairs, frame_types, slide_transition_types = extract_slide_transitions(slide_ids, slide_frame_ids_1, slide_frame_ids_2)
+        print("🔍 slide_transition_pairs 数量：", len(slide_transition_pairs))
 
-    
         ##################################################################
         ##  Stage 2: check slide - video candidates                ##
         ##################################################################
@@ -189,8 +189,12 @@ def test_SliTraNet(opt):
                     pair = slide_transition_pairs[key]
                     f = open(logfile_path, "a")
                     f.write("{}, {}, {}\n".format(s,int(pair[0])+1,int(pair[1])+1))
-                    f.close() 
-            neg_indices = np.hstack(neg_indices)    
+                    f.close()
+            if len(neg_indices) > 0:
+                neg_indices = np.hstack(neg_indices)
+            else:
+                neg_indices = np.array([], dtype=int)
+
             mask = np.ones(len(slide_transition_pairs), dtype=bool)
             mask[neg_indices] = False
             filtered_slide_transition_pairs = slide_transition_pairs[mask,...]               
@@ -200,28 +204,29 @@ def test_SliTraNet(opt):
             
                   
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser('slide_detection') 
-    parser.add_argument('--dataset_dir', help='path to dataset dir',type=str, default='C:/Users/Sindel/Project/Data/datasets/LectureVideos') 
-    parser.add_argument('--out_dir', help='path to result dir',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/results/test/SliTraNet-gray-RGB')
+    parser = argparse.ArgumentParser('slide_detection')
+    parser.add_argument('--dataset_dir', help='path to dataset dir',type=str, default='E:/video_experiment/project/Data/datasets')
+    parser.add_argument('--out_dir', help='path to result dir',type=str, default='E:/video_experiment/project/Code/SliTraNet/results/test/SliTraNet-gray-RBG')
     parser.add_argument('--patch_size', type=int, default=256, help='network input patch size')
     parser.add_argument('--phase', type=str, default='test', help='train, val, test, etc')
     parser.add_argument('--load_checkpoint', type=bool, default=False, help='model_path is path to checkpoint (True) or path to state dict (False)')
     ### Parameters for 2-D CNN
-    parser.add_argument('--pred_dir', help='path to 2d result dir',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/results/test/resnet18_gray')
-    parser.add_argument('--backbone_2D', help='name of 2d backbone (resnet18 or resnet50)',type=str, default='resnet18')   
-    parser.add_argument('--model_path_2D', help='path of weights resnet2d',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/weights/Frame_similarity_ResNet18_gray.pth')
+    parser.add_argument('--pred_dir', help='path to 2d result dir',type=str, default='E:/video_experiment/project/Code/SliTraNet/results/test/resnet18_gray')
+    parser.add_argument('--backbone_2D', help='name of 2d backbone (resnet18 or resnet50)',type=str, default='resnet18')
+    parser.add_argument('--model_path_2D', help='path of weights resnet2d',type=str, default='E:/video_experiment/project/Code/SliTraNet/weights/Frame_similarity_ResNet18_gray.pth')
     parser.add_argument('--slide_thresh', type=int, default=8, help='threshold for minimum static slide length')
     parser.add_argument('--video_thresh', type=int, default=13, help='threshold for minimum video length to distinguish from gradual transition')
     parser.add_argument('--input_nc', type=int, default=2, help='number of input channels for ResNet: gray:2, RGB:6')
-    parser.add_argument('--in_gray', type=bool, default=True, help='run resnet2d with grayscale input, else RGB')    
+    parser.add_argument('--in_gray', type=bool, default=True, help='run resnet2d with grayscale input, else RGB')
     ### Parameters for 3-D CNN
     parser.add_argument('--backbone_3D', help='name of 3d backbone (resnet18 or resnet50)',type=str, default='resnet50')
-    parser.add_argument('--model_path_1', help='path of weights for 3D CNN Slide video detection',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/weights/Slide_video_detection_3DResNet50.pth')
-    parser.add_argument('--model_path_2', help='path of weights for 3D CNN Slide transition detection',type=str, default='C:/Users/Sindel/Project/Code/SliTraNet/weights/Slide_transition_detection_3DResNet50.pth')
+    parser.add_argument('--model_path_1', help='path of weights for 3D CNN Slide video detection',type=str, default='E:/video_experiment/project/Code/SliTraNet/weights/Slide_video_detection_3DResNet50.pth')
+    parser.add_argument('--model_path_2', help='path of weights for 3D CNN Slide transition detection',type=str, default='E:/video_experiment/project/Code/SliTraNet/weights/Slide_transition_detection_3DResNet50.pth')
     parser.add_argument('--temporal_sampling', type=int, default=1, help='temporal sampling factor, e.g. 1: each frame, 5: each 5th frame')
-    parser.add_argument('--clip_length', type=int, default=8, help='network input patch size')  
-    parser.add_argument('--batch_size', type=int, default=32, help='batch size')   
+    parser.add_argument('--clip_length', type=int, default=8, help='network input patch size')
+    parser.add_argument('--batch_size', type=int, default=32, help='batch size')
 
-    opt = parser.parse_args()  
+    opt = parser.parse_args()
 
-    test_SliTraNet(opt)   
+    test_SliTraNet(opt)
+

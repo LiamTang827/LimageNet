@@ -87,7 +87,7 @@ class VideoClipTestDataset(data.Dataset):
                 for p in ps:
                     clip_ids = np.array(range(p-half_clip_length*self.temporal_sampling, p+half_clip_length*self.temporal_sampling, self.temporal_sampling))
                     clip_list.append(clip_ids)
-                    transition_no.append(i) 
+                    transition_no.append(i)
 
         self.clip_list = np.vstack(clip_list) 
         self.transition_no_list = np.vstack(transition_no) 
